@@ -36,6 +36,7 @@ def set_nombre():
     ##Lo mismo pero con el nombre
     print(nombre_entry.get())
     nombre = nombre_entry.get()
+    print(nombre)
 
 opciones_clases =[] ##Usarlo en el campo de opciones de clase y poner un botón de confirmar al lado.
 opciones = requests.get(BASE_URL + "classes/").json()["results"]
@@ -50,10 +51,25 @@ def set_clase(): ##funcion a la que llamar al pulsar el botón
     ##Recoger clase escogida en Tkinter y meterla en la variable clase
     print(clase_combobox.get())
     clase = clase_combobox.get()
-    info_clase = requests.get(BASE_URL + "classes/" + clase.lower() + "/").json()
+    info_clase = requests.get(BASE_URL + "classes/" + clase.lower()).json()
+    print(info_clase)
+    # mostrar_competencias()
+    pass
 
 clase_verificar = ttk.Button(frm, text="Verificar Clase", command=set_clase)
 clase_verificar.grid(column=1, row=3)
+
+def mostrar_competencias():
+    competencias_posibles = info_clase["proficiency_choices"]
+    competencias_posibles_nombres = []
+    for competencia in competencias_posibles:
+        for skill in competencia["from"]["options"]:
+            competencias_posibles_nombres.append(skill["item"]["name"])
+        for i in range(competencia["choose"]):
+            ##Pintar un ttk.combobox con competencias_posibles_nombres
+            boton_competencia = ttk.Combobox(frm, values=competencias_posibles_nombres, state="readonly")
+            boton_competencia.grid(column=0, row=4 + i)
+
 
 '''ENCIMA LO QUE SE USA PARA TKINTER'''
 
