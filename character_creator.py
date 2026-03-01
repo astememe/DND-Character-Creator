@@ -6,6 +6,7 @@ from tkinter import ttk
 from tkinter.ttk import Combobox
 
 import requests
+from django.template.defaultfilters import default
 
 '''!!! No vamos a meter ni multiclases ni subclases !!!'''
 
@@ -45,7 +46,8 @@ for opcion in opciones:
     opciones_clases.append(opcion["name"])
 
 clase_combobox=Combobox(frm, values=opciones_clases, state="readonly")
-clase_combobox.grid(column=0, row=3)
+clase_combobox.current(0)
+clase_combobox.grid(column=0, row=3, padx=10, pady=20)
 
 def set_clase(): ##funcion a la que llamar al pulsar el botón
     ##Recoger clase escogida en Tkinter y meterla en la variable clase
