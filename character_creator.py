@@ -25,6 +25,7 @@ root.geometry("800x500")
 nombre = None
 clase = None
 info_clase = None
+competencias_armas = []
 competencias_habilidades = []
 competencias_herramientas = []
 
@@ -49,6 +50,16 @@ print("Clases disponibles:\n")
 for opcion in opciones:
     opciones_clases.append(opcion["name"])
 
+def set_proficiencias(): ##función que recoge las  proficiencias de cada clase.
+    global clase,competencias_armas
+    clase = clase_combobox.get()
+
+    competencias = []
+    competencias_armas = requests.get(BASE_URL + "classes/monk").json()["proficiencies"]
+    for competencia in competencias_armas:
+        competencias.append(competencia["name"])
+    print(competencias)
+
 clase_combobox=Combobox(frm, values=opciones_clases, state="readonly")
 clase_combobox.current(0)
 clase_combobox.grid(column=0, row=3, padx=10, pady=20)
@@ -60,6 +71,7 @@ def set_clase(): ##funcion a la que llamar al pulsar el botón
 
     info_clase = requests.get(BASE_URL + "classes/" + clase.lower()).json()
     mostrar_competencias()
+    set_proficiencias()
 
 clase_verificar = ttk.Button(frm, text="Verificar Clase", command=set_clase)
 clase_verificar.grid(column=1, row=3)
