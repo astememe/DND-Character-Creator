@@ -25,8 +25,21 @@ for opcion in opciones:
 def set_clase(): ##funcion a la que llamar al pulsar el botón
     ##Recoger clase escogida en Tkinter y meterla en la variable clase
     info_clase = requests.get(BASE_URL + "classes/" + clase).json()
-
+    mostrar_competencias()
     pass
+
+def mostrar_competencias():
+    competencias_posibles = info_clase["proficiency_choices"]
+    competencias_posibles_nombres = []
+    for competencia in competencias_posibles:
+        for skill in competencia["from"]["options"]:
+            competencias_posibles_nombres.append(skill["item"]["name"])
+        for i in range(competencia["choose"]):
+            ##Pintar un ttk.combobox con competencias_posibles_nombres
+
+
+
+
 
 
 
