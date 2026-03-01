@@ -36,6 +36,7 @@ def mostrar_competencias():
             competencias_posibles_nombres.append(skill["item"]["name"])
         for i in range(competencia["choose"]):
             ##Pintar un ttk.combobox con competencias_posibles_nombres
+    pass
 
 
 
@@ -80,6 +81,3 @@ def recoger_info_clase(info):
     competencias_de_comienzo = info["proficiencies"] ##Array de json. Cada elemento tiene index, name, url
     tiradas_de_salvacion = info["saving_throws"] ##Array de json. Cada elemento tiene index, name, url
     equipamiento_de_comienzo = info["starting_equipment"] ## {"equipment": {index, name, url}}
-
-
-elegir_competencias(elegir_clase())
