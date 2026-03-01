@@ -1,11 +1,21 @@
 import json
 from stat import FILE_ATTRIBUTE_ARCHIVE
 
+from tkinter import *
+from tkinter import ttk
+
 import requests
 
 '''!!! No vamos a meter ni multiclases ni subclases !!!'''
 
+root = Tk()
+frm = ttk.Frame(root, padding=30)
+frm.grid()
+
 BASE_URL = "https://www.dnd5eapi.co/api/2014/"
+
+root.title("DnD")
+root.geometry("800x500")
 
 nombre = None
 clase = None
