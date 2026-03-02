@@ -24,7 +24,6 @@ def get_races():
 
 def set_races():
     global raza
-
     raza = raza_combobox.get()
     mostrar_info_raza()
 
@@ -36,8 +35,7 @@ def mostrar_info_raza():
 
 
 
-def set_clase(): ##funcion a la que llamar al pulsar el botón
-    ##Recoger clase escogida en Tkinter y meterla en la variable clase
+def set_clase():
     global clase, info_clase
     clase = clase_combobox.get()
 
@@ -45,16 +43,17 @@ def set_clase(): ##funcion a la que llamar al pulsar el botón
     mostrar_competencias()
     mostrar_equipamiento()
     set_proficiencias()
+    set_races()
 
-def set_proficiencias(): ##función que recoge las  proficiencias de cada clase.
-    global clase,competencias_armas
-
+def set_proficiencias():
+    global clase, competencias_armas
     competencias = []
     competencias_armas = requests.get(BASE_URL + "classes/" + clase.lower()).json()["proficiencies"]
     for competencia in competencias_armas:
         competencias.append(competencia["name"])
-    competencias.pop()
-    competencias.pop()
+    if len(competencias) >= 2:
+        competencias.pop()
+        competencias.pop()
     print(competencias)
 
 def generate_stats():
@@ -83,7 +82,7 @@ def mostrar_competencias():
         widget.destroy()
     fila_interna = 0
     for bloque in info_clase["proficiency_choices"]:
-        ttk.Label(contenedor_competencias, text=bloque["desc"]).grid(column=0, row=fila_interna, pady=5)
+        ttk.Label(contenedor_competencias, text=bloque["desc"]).grid(column=0, row=fila_interna, pady=5, sticky="w")
         fila_interna += 1
         opciones_limpias = []
 
@@ -100,7 +99,6 @@ def mostrar_competencias():
         for i in range(bloque["choose"]):
             combo = ttk.Combobox(contenedor_competencias, values=opciones_limpias, state="readonly", width=50)
             combo.grid(column=0, row=fila_interna, pady=2)
-            combo.current(i)
             fila_interna += 1
 
 def get_items_from_category(url_categoria):
@@ -114,7 +112,7 @@ def mostrar_equipamiento():
 
     fila = 0
     for bloque in info_clase["starting_equipment_options"]:
-        ttk.Label(contenedor_equipamiento, text=bloque["desc"]).grid(column=0, row=fila, pady=(10, 2))
+        ttk.Label(contenedor_equipamiento, text=bloque["desc"]).grid(column=0, row=fila, pady=(10, 2), sticky="w")
         fila += 1
 
         opciones_finales = []
@@ -142,23 +140,19 @@ def mostrar_equipamiento():
 
         for i in range(bloque["choose"]):
             combo = ttk.Combobox(contenedor_equipamiento, values=opciones_finales, state="readonly", width=60)
-            combo.grid(column=0, row=fila, pady=2)
-            combo.current(i)
+            combo.grid(column=0, row=fila, pady=2, padx=10)
             fila += 1
 
 
 
 root = Tk()
 root.title("DnD")
-ancho = 800
-alto = 500
-x = (root.winfo_screenwidth() // 2) - (ancho // 2)
-y = (root.winfo_screenheight() // 2) - (alto // 2)
-root.geometry(f"{ancho}x{alto}+{x}+{y}")
+root.geometry("850x850")
 
 frm = ttk.Frame(root, padding=30)
-frm.grid()
-frm.place(relx=0.5, rely=0.3, anchor="center")
+frm.pack(expand=True)
+frm.columnconfigure(0, weight=1)
+frm.columnconfigure(1, weight=1)
 
 BASE_URL = "https://www.dnd5eapi.co/api/2014/"
 
@@ -173,43 +167,41 @@ hit_die = None
 tiradas_de_salvacion = []
 equipamiento_de_comienzo = []
 
-ttk.Label(frm, text="Introduce nombre:").grid(column=0, row=0)
+""""Diseño de interfaz"""
+ttk.Label(frm, text="Introduce nombre:").grid(column=0, row=0, columnspan=2)
 nombre_entry = ttk.Entry(frm, width=30)
 nombre_entry.insert(0, "Nombre")
-nombre_entry.grid(column=0, row=1)
+nombre_entry.grid(column=0, row=1, columnspan=2, pady=5)
 
-
-opciones_clases =[] ##Usarlo en el campo de opciones de clase y poner un botón de confirmar al lado.
+opciones_clases = []
 opciones = requests.get(BASE_URL + "classes/").json()["results"]
 print("Clases disponibles:\n")
 for opcion in opciones:
     opciones_clases.append(opcion["name"])
 
-ttk.Label(frm, text="Select clase:").grid(column=0, row=2, pady=(15, 0))
-
-clase_combobox=Combobox(frm, values=opciones_clases, state="readonly")
+ttk.Label(frm, text="Select clase:").grid(column=0, row=2, pady=(15, 0), columnspan=2)
+clase_combobox = Combobox(frm, values=opciones_clases, state="readonly")
 clase_combobox.current(0)
-clase_combobox.grid(column=0, row=3)
-
+clase_combobox.grid(column=0, row=3, padx=5, sticky="e")
 clase_verificar = ttk.Button(frm, text="Verificar Clase", command=set_clase)
-clase_verificar.grid(column=1, row=3)
+clase_verificar.grid(column=1, row=3, padx=5, sticky="w")
 
-ttk.Label(frm, text="Select race:").grid(column=0, row=6, pady=(15, 0))
+ttk.Label(frm, text="Select race:").grid(column=0, row=4, pady=(15, 0), columnspan=2)
 raza_combobox = Combobox(frm, values=get_races(), state="readonly")
 raza_combobox.current(0)
-raza_combobox.grid(column=0, row=7)
+raza_combobox.grid(column=0, row=5, padx=5, sticky="e")
 
 raza_verificar = ttk.Button(frm, text="Verify race", command=set_races)
-raza_verificar.grid(column=1, row=7)
+raza_verificar.grid(column=1, row=5, padx=5, sticky="w")
 
 contenedor_competencias = ttk.LabelFrame(frm, text="Competencias", padding="10")
-contenedor_competencias.grid(column=0, row=4, columnspan=2, pady=10)
+contenedor_competencias.grid(column=0, row=6, columnspan=2, pady=10, sticky="nsew")
 
 contenedor_equipamiento = ttk.LabelFrame(frm, text="Equipamiento Inicial", padding="10")
-contenedor_equipamiento.grid(column=0, row=5, padx=10, pady=10)
+contenedor_equipamiento.grid(column=0, row=7, columnspan=2, pady=10, sticky="nsew")
 
 contenedor_stats = ttk.LabelFrame(frm, text="Stats", padding="10")
-contenedor_stats.grid(column=0, row=8, pady=10)
+contenedor_stats.grid(column=0, row=8, columnspan=2, pady=10)
 
 contenedor_info_raza = ttk.LabelFrame(frm, text="Info " + raza, padding="10")
 contenedor_info_raza.grid(column=0, row=9, padx=10)
