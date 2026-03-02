@@ -7,7 +7,6 @@ from tkinter import ttk
 from tkinter.ttk import Combobox
 
 import requests
-from django.template.defaultfilters import default
 
 '''!!! No vamos a meter ni multiclases ni subclases !!!'''
 
@@ -52,12 +51,13 @@ for opcion in opciones:
 
 def set_proficiencias(): ##función que recoge las  proficiencias de cada clase.
     global clase,competencias_armas
-    clase = clase_combobox.get()
 
     competencias = []
-    competencias_armas = requests.get(BASE_URL + "classes/monk").json()["proficiencies"]
+    competencias_armas = requests.get(BASE_URL + "classes/" + clase.lower()).json()["proficiencies"]
     for competencia in competencias_armas:
         competencias.append(competencia["name"])
+    competencias.pop()
+    competencias.pop()
     print(competencias)
 
 clase_combobox=Combobox(frm, values=opciones_clases, state="readonly")
