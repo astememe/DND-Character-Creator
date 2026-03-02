@@ -163,9 +163,6 @@ hit_die = None
 tiradas_de_salvacion = []
 equipamiento_de_comienzo = []
 
-# Hay que cambiar cosas para que se manejen
-# los inputs en Tkinter
-
 opciones_clases =[] ##Usarlo en el campo de opciones de clase para que aparezcan en un menú desplegable y poner un botón de confirmar al lado.
 ttk.Label(frm, text="Introduce nombre:").grid(column=0, row=0)
 nombre_entry = ttk.Entry(frm, width=30)
@@ -219,6 +216,4 @@ charisma.grid(column=5, row=1, padx=3)
 btn_generate = ttk.Button(contenedor_stats, text="Generate", command=generate_stats)
 btn_generate.grid(column=6, row=1, padx=10)
 
-
-'''ENCIMA LO QUE SE USA PARA TKINTER'''
 root.mainloop()
