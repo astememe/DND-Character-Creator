@@ -76,7 +76,6 @@ def generate_stats(tipos):
     print(f"Suma total conseguida: {sum_stats}")
 
 def mostrar_stats():
-
     contenedor_stats = ttk.LabelFrame(frm, text="Stats", padding="10")
     contenedor_stats.grid(column=0, row=8, columnspan=2, pady=10)
 
