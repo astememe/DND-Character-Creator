@@ -11,7 +11,6 @@ import requests
 
 '''!!! No vamos a meter ni multiclases ni subclases !!!'''
 
-<<<<<<< master
 root = Tk()
 frm = ttk.Frame(root, padding=30)
 frm.place(relx=0.5, rely=0.2, anchor="center")
@@ -46,9 +45,8 @@ opciones_clases =[] ##Usarlo en el campo de opciones de clase para que aparezcan
 ttk.Label(frm, text="Introduce nombre:").grid(column=0, row=0)
 nombre_entry = ttk.Entry(frm, width=30)
 nombre_entry.grid(column=0, row=1)
-=======
+
 """Funciones"""
->>>>>>> master
 
 def set_nombre():
     ##Lo mismo pero con el nombre
@@ -56,8 +54,6 @@ def set_nombre():
     print(nombre_entry.get())
     nombre = nombre_entry.get()
     print(nombre)
-
-
 
 
 def set_races():
@@ -99,17 +95,6 @@ def set_clase(): ##funcion a la que llamar al pulsar el botón
     mostrar_equipamiento()
     set_proficiencias()
     set_races()
-
-def set_proficiencias(): ##función que recoge las  proficiencias de cada clase.
-    global clase,competencias_armas
-
-    competencias = []
-    competencias_armas = requests.get(BASE_URL + "classes/" + clase.lower()).json()["proficiencies"]
-    for competencia in competencias_armas:
-        competencias.append(competencia["name"])
-    competencias.pop()
-    competencias.pop()
-    print(competencias)
 
 
 def generate_stats():
@@ -199,10 +184,6 @@ def mostrar_equipamiento():
             fila += 1
 
 
-
-root = Tk()
-frm = ttk.Frame(root, padding=30)
-frm.grid()
 contenedor_competencias = ttk.LabelFrame(root, text="Competencias", padding="10")
 contenedor_competencias.grid(column=0, row=3, columnspan=2, pady=10)
 contenedor_equipamiento = ttk.LabelFrame(root, text="Equipamiento Inicial", padding="10")
