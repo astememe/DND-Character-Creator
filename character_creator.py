@@ -23,6 +23,9 @@ root.geometry("800x500")
 nombre = None
 clase = None
 info_clase = None
+hit_die = None
+tiradas_de_salvacion = None
+equipamiento_de_comienzo = None
 competencias_habilidades = []
 competencias_herramientas = []
 
@@ -52,7 +55,10 @@ clase_combobox.grid(column=0, row=3)
 
 def set_clase(): ##funcion a la que llamar al pulsar el botón
     ##Recoger clase escogida en Tkinter y meterla en la variable clase
-    global clase, info_clase
+    global clase, info_clase, hit_die, tiradas_de_salvacion, equipamiento_de_comienzo
+    hit_die = info_clase["hit_die"]
+    tiradas_de_salvacion = info_clase["saving_throws"] ##Array de json. Cada elemento tiene index, name, url
+    equipamiento_de_comienzo = info_clase["starting_equipment"] ## {"equipment": {index, name, url}}
     clase = clase_combobox.get()
 
     info_clase = requests.get(BASE_URL + "classes/" + clase.lower()).json()
@@ -88,35 +94,9 @@ def mostrar_competencias():
 
 '''ENCIMA LO QUE SE USA PARA TKINTER'''
 
-def elegir_competencias(info):
-    competencias_posibles = info["proficiency_choices"]
-    competencias_posibles_nombres = []
-
-    for competencia in competencias_posibles:
-        print(competencia["desc"] + "\n")
-        competencias_posibles_nombres.clear()
-        for skill in competencia["from"]["options"]:
-            print(skill["item"]["name"])
-            competencias_posibles_nombres.append(skill["item"]["name"])
-        for i in range(competencia["choose"]): ##Número de competencias que tiene que elegir
-            competencia_valida = False
-            competencia_elegida = input(f"Introduzca competencia #{i + 1}:\n>>> ")
-            if competencia_elegida in list(map(lambda x: x["from"]["options"]["item"]["name"], competencia)):
-                competencia_valida = True
-            while not competencia_valida:
-                competencia_elegida = input(f"Competencia inválida. Introduzca competencia:\n>>> ")
-                if competencia_elegida in list(map(lambda x: x["from"]["options"]["item"]["name"], competencia)):
-                    competencia_valida = True
-            competencias_habilidades.append(competencia_elegida)
-
-
-
 
 def recoger_info_clase(info):
-    hit_die = info["hit_die"]
-    competencias_de_comienzo = info["proficiencies"] ##Array de json. Cada elemento tiene index, name, url
-    tiradas_de_salvacion = info["saving_throws"] ##Array de json. Cada elemento tiene index, name, url
-    equipamiento_de_comienzo = info["starting_equipment"] ## {"equipment": {index, name, url}}
+
 
 
 root.mainloop()
