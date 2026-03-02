@@ -1,7 +1,11 @@
 import random as r
+from textwrap import wrap
+
+import openpyxl
 
 from tkinter import *
 from tkinter import ttk
+from tkinter.font import Font
 from tkinter.ttk import Combobox
 
 import requests
@@ -26,8 +30,8 @@ def get_races():
 def set_races():
     global raza
     raza = raza_combobox.get()
-    mostrar_stats()
     mostrar_info_raza()
+    mostrar_stats()
 
 def set_clase():
     global clase, info_clase
@@ -51,7 +55,7 @@ def set_proficiencias():
     print(competencias)
 
 def mostrar_info_raza():
-    global tipos_stats
+    global tipos_stats, info_raza
     for widget in contenedor_info_raza.winfo_children():
         widget.destroy()
     for widget in contenedor_stats.winfo_children():
@@ -69,9 +73,17 @@ def mostrar_info_raza():
 
         tipos_stats.append(entry)
 
-    ttk.Label(contenedor_info_raza, text="Velocidad: " + str(info_raza["speed"])).grid(
-        column=0, row=0, pady=5, sticky="w"
-    )
+    ttk.Label(contenedor_info_raza, text="Speed: " + str(info_raza["speed"])).grid(column=0, row=0, pady=5, sticky="w")
+    languages = [language["name"] for language in info_raza["languages"]]
+    languages_str = ", ".join(languages)
+    ttk.Label(contenedor_info_raza, text="Languages: " + languages_str).grid(column=0, row=1, pady=5, sticky="w")
+    alignment = info_raza["alignment"]
+    ttk.Label(contenedor_info_raza, wraplength=400, text="Alignment: " + alignment).grid(column=0, row=2, pady=5, sticky="w")
+
+    info_caracteristicas = info_raza["traits"]
+    for i in range (len(info_caracteristicas)):
+        info_caracteristica = requests.get(BASE_URL + "traits/" + info_caracteristicas[i]["index"]).json()
+        ttk.Label(contenedor_info_raza, wraplength=600, text=f"{info_caracteristica['name']}: {info_caracteristica['desc']}").grid(column=0, row=3+i, pady=5, sticky="w")
 
     generate_stats()
 
@@ -92,7 +104,30 @@ def generate_stats():
     asignacion = {}
     for i in range(6):
         asignacion[prioridad[i]] = stats[i]
+    global tipos_stats
+    minimo_requerido = False
+    stats = []
+    while not minimo_requerido:
+        sum_stats = 0
+        for i in range(6):
+            stat = r.randint(3, 18)
+            stats.append([tipos_stats_nombres[i], stat])
+            sum_stats += stat
+        if sum_stats >= 72:
+            minimo_requerido = True
 
+    stat_bonuses = get_stat_bonus()
+    for stat in stat_bonuses:
+        posicion_stat = tipos_stats_nombres.index(stat[0])
+        stats[posicion_stat][1] += stat[1]
+
+
+    for i in range(len(tipos_stats)):
+        tipos_stats[i].config(state="normal")
+        tipos_stats[i].delete(0, END)
+        tipos_stats[i].insert(0, str(stats[i][1]))
+        tipos_stats[i].config(state="readonly")
+    print(f"Suma total conseguida: {sum_stats}")
     for i, widget in enumerate(tipos_stats):
         stat = orden_entries[i]
         valor = asignacion[stat]
@@ -101,6 +136,13 @@ def generate_stats():
         widget.delete(0, END)
         widget.insert(0, str(valor))
         widget.config(state="readonly")
+
+def get_stat_bonus():
+    stats_bonuses = []
+    stats_bonuses_json = requests.get(BASE_URL + "races/" + raza.lower()).json()["ability_bonuses"]
+    for stat in stats_bonuses_json:
+        stats_bonuses.append((stat["ability_score"]["name"], stat["bonus"]))
+    return stats_bonuses
 
 def mostrar_stats():
     btn_generate = ttk.Button(contenedor_stats, text="Generate", command=generate_stats)
@@ -174,14 +216,32 @@ def mostrar_equipamiento():
             combo.grid(column=0, row=fila, pady=2)
             fila += 1
 
+
+
 root = Tk()
 root.title("DnD")
 root.geometry("850x850")
 
-frm = ttk.Frame(root, padding=30)
-frm.pack(expand=True)
+main_container = Frame(root)
+main_container.pack(fill='both', expand=True)
+
+canvas = Canvas(main_container)
+scrollbar = ttk.Scrollbar(main_container, orient='vertical', command=canvas.yview)
+canvas.configure(yscrollcommand=scrollbar.set)
+
+scrollbar.pack(side='right', fill='y')
+canvas.pack(side='left', fill='both', expand=True)
+frm = ttk.Frame(canvas, padding=30)
+
+canvas_frame = canvas.create_window((0, 0), window=frm, anchor="nw")
+canvas.bind('<Configure>', lambda e: canvas.itemconfig(canvas_frame, width=e.width)) ##Hace que el canvas ocpe la pantalla entera entonces se centaran las cosas
+frm.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all"))) ##Hace que el frame ocupe el canvas entero jaja
 frm.columnconfigure(0, weight=1)
 frm.columnconfigure(1, weight=1)
+
+def mover_rueda(event):
+    canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+canvas.bind_all("<MouseWheel>", mover_rueda)
 
 BASE_URL = "https://www.dnd5eapi.co/api/2014/"
 
@@ -205,7 +265,8 @@ nombre_stats = ["INT", "STR", "DEX", "WIS", "CON", "CHA"]
 nombre = None
 clase = ""
 raza = ""
-info_clase = None
+info_clase = {}
+info_raza = {}
 competencias_armas = []
 competencias_habilidades = []
 competencias_herramientas = []
@@ -214,15 +275,14 @@ tiradas_de_salvacion = []
 equipamiento_de_comienzo = []
 tipos_stats = []
 
-
 ttk.Label(frm, text="Introduce nombre:").grid(column=0, row=0,columnspan=2)
 nombre_entry = ttk.Entry(frm, width=30)
 nombre_entry.insert(0, "name")
 nombre_entry.grid(column=0, row=1, columnspan=2, pady=5)
 
-
 opciones_clases =[] ##Usarlo en el campo de opciones de clase y poner un botón de confirmar al lado.
 opciones = requests.get(BASE_URL + "classes/").json()["results"]
+# print("Clases disponibles:\n")
 for opcion in opciones:
     opciones_clases.append(opcion["name"])
 
@@ -230,16 +290,16 @@ ttk.Label(frm, text="Select class:").grid(column=0, row=2, pady=(15, 0), columns
 clase_combobox = Combobox(frm, values=opciones_clases, state="readonly")
 clase_combobox.current(0)
 clase_combobox.grid(column=0, row=3, padx=5, sticky="e")
-clase_verificar = ttk.Button(frm, text="Verify Class", command=set_clase)
-clase_verificar.grid(column=1, row=3, padx=5, sticky="w")
+clase_verificar = ttk.Button(frm, text="Verify", command=set_clase)
+clase_verificar.grid(column=1, row=5, padx=5, sticky="w")
 
 ttk.Label(frm, text="Select race:").grid(column=0, row=4, pady=(15, 0), columnspan=2)
 raza_combobox = Combobox(frm, values=get_races(), state="readonly")
 raza_combobox.current(0)
 raza_combobox.grid(column=0, row=5, padx=5, sticky="e")
 
-raza_verificar = ttk.Button(frm, text="Verify race", command=set_races)
-raza_verificar.grid(column=1, row=5, padx=5, sticky="w")
+# raza_verificar = ttk.Button(frm, text="Verify race", command=set_races)
+# raza_verificar.grid(column=1, row=5, padx=5, sticky="w")
 
 contenedor_competencias = ttk.LabelFrame(frm, text="Competencias", padding="10")
 contenedor_competencias.grid(column=0, row=6, columnspan=2, pady=10, sticky="nsew")
@@ -253,9 +313,13 @@ contenedor_info_raza.grid(column=0, row=9,columnspan=2, padx=10, sticky="nsew")
 contenedor_stats = ttk.LabelFrame(frm, text="Stats", padding="10")
 contenedor_stats.grid(column=0, row=8, columnspan=2, pady=10)
 
-ttk.Label(frm, text="Tell your story:").grid(column=0, row=10, columnspan=2, pady=(10, 0), sticky="nsew")
-backstory = ttk.Entry(frm, width=60)
-backstory = ScrolledText(frm, width=60, height=10)
-backstory.grid(column=0, row=11, columnspan=2, pady=5)
+contenedor_story = ttk.LabelFrame(frm, text="Tell your story:")
+contenedor_story.grid(column=0, row=10, columnspan=2, pady=(10, 0), sticky="nsew")
+
+backstory = ScrolledText(contenedor_story, width=60, height=10)
+backstory.pack(padx=10, pady=10)
+tipos_stats_nombres = ["INT", "STR", "DEX", "WIS", "CON", "CHA"]
+
+
 
 root.mainloop()
