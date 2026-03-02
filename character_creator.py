@@ -146,14 +146,6 @@ root.geometry(f"{ancho}x{alto}+{x}+{y}")
 frm = ttk.Frame(root, padding=30)
 frm.grid()
 frm.place(relx=0.5, rely=0.3, anchor="center")
-contenedor_competencias = ttk.LabelFrame(frm, text="Competencias", padding="10")
-contenedor_competencias.grid(column=0, row=6, columnspan=2, pady=10)
-contenedor_equipamiento = ttk.LabelFrame(frm, text="Equipamiento Inicial", padding="10")
-contenedor_equipamiento.grid(column=0, row=4, padx=10, pady=10)
-contenedor_stats = ttk.LabelFrame(frm, text="Stats", padding="10")
-contenedor_stats.grid(column=0, row=7, pady=10)
-
-
 
 BASE_URL = "https://www.dnd5eapi.co/api/2014/"
 
@@ -188,14 +180,22 @@ clase_combobox.grid(column=0, row=3)
 clase_verificar = ttk.Button(frm, text="Verificar Clase", command=set_clase)
 clase_verificar.grid(column=1, row=3)
 
-ttk.Label(frm, text="Select race:").grid(column=0, row=4, pady=(15, 0))
+ttk.Label(frm, text="Select race:").grid(column=0, row=6, pady=(15, 0))
 raza_combombox = Combobox(frm, values=set_races(), state="readonly")
 raza_combombox.current(0)
-raza_combombox.grid(column=0, row=5)
+raza_combombox.grid(column=0, row=7)
 
 raza_verificar = ttk.Button(frm, text="Verify race", command=set_races)
-raza_verificar.grid(column=1, row=5)
+raza_verificar.grid(column=1, row=7)
 
+contenedor_competencias = ttk.LabelFrame(frm, text="Competencias", padding="10")
+contenedor_competencias.grid(column=0, row=4, columnspan=2, pady=10)
+
+contenedor_equipamiento = ttk.LabelFrame(frm, text="Equipamiento Inicial", padding="10")
+contenedor_equipamiento.grid(column=0, row=5, padx=10, pady=10)
+
+contenedor_stats = ttk.LabelFrame(frm, text="Stats", padding="10")
+contenedor_stats.grid(column=0, row=8, pady=10)
 contenedor_stats.config(cursor="target")
 
 intelligence = ttk.Entry(contenedor_stats, width=5, state="readonly", justify="center")
