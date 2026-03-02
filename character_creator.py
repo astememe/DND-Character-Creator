@@ -320,6 +320,7 @@ backstory = ScrolledText(contenedor_story, width=60, height=10)
 backstory.pack(padx=10, pady=10)
 tipos_stats_nombres = ["INT", "STR", "DEX", "WIS", "CON", "CHA"]
 
-
+# EXCEL
+root_characters = "character.csv"
 
 root.mainloop()
