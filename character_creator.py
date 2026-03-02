@@ -55,12 +55,13 @@ for opcion in opciones:
 
 def set_proficiencias(): ##función que recoge las  proficiencias de cada clase.
     global clase,competencias_armas
-    clase = clase_combobox.get()
 
     competencias = []
-    competencias_armas = requests.get(BASE_URL + "classes/monk").json()["proficiencies"]
+    competencias_armas = requests.get(BASE_URL + "classes/" + clase.lower()).json()["proficiencies"]
     for competencia in competencias_armas:
         competencias.append(competencia["name"])
+    competencias.pop()
+    competencias.pop()
     print(competencias)
 
 ttk.Label(frm, text="Elige clase:").grid(column=0, row=2, pady=(15, 0))
