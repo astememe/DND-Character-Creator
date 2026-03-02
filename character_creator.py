@@ -91,18 +91,61 @@ def mostrar_competencias():
 
         for i in range(bloque["choose"]):
             combo = ttk.Combobox(contenedor_competencias, values=opciones_limpias, state="readonly", width=50)
-            combo.current(i)
             combo.grid(column=0, row=fila_interna, pady=2)
             fila_interna += 1
 
-'''¡¡¡ No vamos a meter ni multiclases ni subclases !!!'''
+def get_items_from_category(url_categoria):
+    data = requests.get("https://www.dnd5eapi.co" + url_categoria).json()
+    return [item["name"] for item in data["equipment"]]
+
+
+def mostrar_equipamiento():
+    for widget in contenedor_equipamiento.winfo_children():
+        widget.destroy()
+
+    fila = 0
+    for bloque in info_clase["starting_equipment_options"]:
+        ttk.Label(contenedor_equipamiento, text=bloque["desc"]).grid(column=0, row=fila, pady=(10, 2))
+        fila += 1
+
+        opciones_finales = []
+
+        for opcion_equipamiento in bloque["from"]["options"]:
+            if opcion_equipamiento["option_type"] == "counted_reference":
+                nombre_equipamiento = f"{opcion_equipamiento['count']} {opcion_equipamiento['of']['name']}"
+                opciones_finales.append(nombre_equipamiento)
+
+            elif opcion_equipamiento["option_type"] == "choice":
+                sub_opcion = opcion_equipamiento["choice"]
+
+                if sub_opcion["from"]["option_set_type"] == "equipment_category":
+                    url_opcion = sub_opcion["from"]["equipment_category"]["url"]
+                    lista_items = get_items_from_category(url_opcion)
+                    for item in lista_items:
+                        opciones_finales.append(item)
+
+                elif sub_opcion["from"]["option_set_type"] == "options_array":
+                    for sub_opcion_segunda in sub_opcion["from"]["options"]:
+                        if "item" in sub_opcion_segunda:
+                            opciones_finales.append(sub_opcion_segunda["item"]["name"])
+                        elif "of" in sub_opcion_segunda:
+                            opciones_finales.append(f"{sub_opcion_segunda['count']} {sub_opcion_segunda['of']['name']}")
+
+        for i in range(bloque["choose"]):
+            combo = ttk.Combobox(contenedor_equipamiento, values=opciones_finales, state="readonly", width=60)
+            combo.grid(column=0, row=fila, pady=2)
+            fila += 1
+
+
 
 root = Tk()
 frm = ttk.Frame(root, padding=30)
 frm.grid()
-contenedor_competencias = ttk.Frame(frm)
+contenedor_competencias = ttk.LabelFrame(root, text="Competencias", padding="10")
 contenedor_competencias.grid(column=0, row=6, columnspan=2, pady=10)
-contenedor_stats = ttk.Frame(frm)
+contenedor_equipamiento = ttk.LabelFrame(root, text="Equipamiento Inicial", padding="10")
+contenedor_equipamiento.grid(column=0, row=4, padx=10, pady=10)
+contenedor_stats = ttk.LabelFrame(root, text="Stats", padding="10")
 contenedor_stats.grid(column=0, row=7, pady=10)
 
 BASE_URL = "https://www.dnd5eapi.co/api/2014/"
@@ -116,6 +159,9 @@ info_clase = None
 competencias_armas = []
 competencias_habilidades = []
 competencias_herramientas = []
+hit_die = None
+tiradas_de_salvacion = []
+equipamiento_de_comienzo = []
 
 # Hay que cambiar cosas para que se manejen
 # los inputs en Tkinter
@@ -175,36 +221,4 @@ btn_generate.grid(column=6, row=1, padx=10)
 
 
 '''ENCIMA LO QUE SE USA PARA TKINTER'''
-
-def elegir_competencias(info):
-    competencias_posibles = info["proficiency_choices"]
-    competencias_posibles_nombres = []
-
-    for competencia in competencias_posibles:
-        print(competencia["desc"] + "\n")
-        competencias_posibles_nombres.clear()
-        for skill in competencia["from"]["options"]:
-            print(skill["item"]["name"])
-            competencias_posibles_nombres.append(skill["item"]["name"])
-        for i in range(competencia["choose"]): ##Número de competencias que tiene que elegir
-            competencia_valida = False
-            competencia_elegida = input(f"Introduzca competencia #{i + 1}:\n>>> ")
-            if competencia_elegida in list(map(lambda x: x["from"]["options"]["item"]["name"], competencia)):
-                competencia_valida = True
-            while not competencia_valida:
-                competencia_elegida = input(f"Competencia inválida. Introduzca competencia:\n>>> ")
-                if competencia_elegida in list(map(lambda x: x["from"]["options"]["item"]["name"], competencia)):
-                    competencia_valida = True
-            competencias_habilidades.append(competencia_elegida)
-
-
-
-
-def recoger_info_clase(info):
-    hit_die = info["hit_die"]
-    competencias_de_comienzo = info["proficiencies"] ##Array de json. Cada elemento tiene index, name, url
-    tiradas_de_salvacion = info["saving_throws"] ##Array de json. Cada elemento tiene index, name, url
-    equipamiento_de_comienzo = info["starting_equipment"] ## {"equipment": {index, name, url}}
-
-
 root.mainloop()
