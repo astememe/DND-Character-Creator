@@ -31,9 +31,7 @@ def mostrar_info_raza():
     for widget in contenedor_info_raza.winfo_children():
         widget.destroy()
     info_raza = requests.get(BASE_URL + "races/" + raza.lower()).json()
-    ttk.Label(contenedor_info_raza, text="Velocidad: " + str(info_raza["speed"])).grid(column=0, row=0, pady=5)
-
-
+    ttk.Label(contenedor_info_raza, text="Velocidad: " + str(info_raza["speed"])).grid(column=0, row=0, pady=5, sticky="w")
 
 def set_clase():
     global clase, info_clase
@@ -204,7 +202,7 @@ contenedor_stats = ttk.LabelFrame(frm, text="Stats", padding="10")
 contenedor_stats.grid(column=0, row=8, columnspan=2, pady=10)
 
 contenedor_info_raza = ttk.LabelFrame(frm, text="Info " + raza, padding="10")
-contenedor_info_raza.grid(column=0, row=9, padx=10)
+contenedor_info_raza.grid(column=0, row=9,columnspan=2, padx=10, sticky="nsew")
 
 intelligence = ttk.Entry(contenedor_stats, width=5, state="readonly", justify="center")
 intelligence.grid(column=0, row=1, padx=3)
