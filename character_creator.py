@@ -139,6 +139,13 @@ def mostrar_equipamiento():
 
 
 root = Tk()
+root.title("DnD")
+ancho = 800
+alto = 500
+x = (root.winfo_screenwidth() // 2) - (ancho // 2)
+y = (root.winfo_screenheight() // 2) - (alto // 2)
+root.geometry(f"{ancho}x{alto}+{x}+{y}")
+
 frm = ttk.Frame(root, padding=30)
 frm.grid()
 contenedor_competencias = ttk.LabelFrame(root, text="Competencias", padding="10")
@@ -147,11 +154,10 @@ contenedor_equipamiento = ttk.LabelFrame(root, text="Equipamiento Inicial", padd
 contenedor_equipamiento.grid(column=0, row=4, padx=10, pady=10)
 contenedor_stats = ttk.LabelFrame(root, text="Stats", padding="10")
 contenedor_stats.grid(column=0, row=7, pady=10)
+frm.place(relx=0.5, rely=0.2, anchor="center")
+
 
 BASE_URL = "https://www.dnd5eapi.co/api/2014/"
-
-root.title("DnD")
-root.geometry("800x500")
 
 nombre = None
 clase = None
