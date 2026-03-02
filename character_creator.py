@@ -16,6 +16,8 @@ frm = ttk.Frame(root, padding=30)
 frm.grid()
 contenedor_competencias = ttk.Frame(frm)
 contenedor_competencias.grid(column=0, row=4, columnspan=2, pady=10)
+contenedor_stats = ttk.Frame(frm)
+contenedor_stats.grid(column=0, row=5, columnspan=2, pady=10)
 
 BASE_URL = "https://www.dnd5eapi.co/api/2014/"
 
@@ -34,6 +36,7 @@ competencias_herramientas = []
 opciones_clases =[] ##Usarlo en el campo de opciones de clase para que aparezcan en un menú desplegable y poner un botón de confirmar al lado.
 ttk.Label(frm, text="Introduce nombre:").grid(column=0, row=0)
 nombre_entry = ttk.Entry(frm, width=30)
+nombre_entry.insert(0, "Nombre")
 nombre_entry.grid(column=0, row=1)
 
 def set_nombre():
@@ -49,9 +52,10 @@ print("Clases disponibles:\n")
 for opcion in opciones:
     opciones_clases.append(opcion["name"])
 
+ttk.Label(frm, text="Elige clase:").grid(column=0, row=2, pady=(15, 0))
 clase_combobox=Combobox(frm, values=opciones_clases, state="readonly")
 clase_combobox.current(0)
-clase_combobox.grid(column=0, row=3, padx=10, pady=20)
+clase_combobox.grid(column=0, row=3)
 
 def set_clase(): ##funcion a la que llamar al pulsar el botón
     ##Recoger clase escogida en Tkinter y meterla en la variable clase
@@ -85,8 +89,38 @@ def mostrar_competencias():
 
         for i in range(bloque["choose"]):
             combo = ttk.Combobox(contenedor_competencias, values=opciones_limpias, state="readonly", width=50)
+            combo.current(i)
             combo.grid(column=0, row=fila_interna, pady=2)
             fila_interna += 1
+
+contenedor_stats.config(cursor="target")
+
+ttk.Label(contenedor_stats, text="INT", width=5).grid(column=1, row=3, pady=3)
+intelligence = ttk.Entry(contenedor_stats, width=5)
+intelligence.grid(column=1, row=4, padx=3)
+
+ttk.Label(contenedor_stats, text="STR", width=5).grid(column=2, row=3, pady=3)
+strength = ttk.Entry(contenedor_stats, width=5)
+strength.grid(column=2, row=4, padx=3)
+
+ttk.Label(contenedor_stats, text="DEX", width=5).grid(column=3, row=3, pady=3)
+dexterity = ttk.Entry(contenedor_stats, width=5)
+dexterity.grid(column=3, row=4, padx=3)
+
+ttk.Label(contenedor_stats, text="WIS", width=5).grid(column=4, row=3, pady=3)
+wisdom = ttk.Entry(contenedor_stats, width=5)
+wisdom.grid(column=4, row=4, padx=3)
+
+ttk.Label(contenedor_stats, text="CON", width=5).grid(column=5, row=3, pady=3)
+constitution = ttk.Entry(contenedor_stats, width=5)
+constitution.grid(column=5, row=4, padx=3)
+
+ttk.Label(contenedor_stats, text="CHA", width=5).grid(column=6, row=3, pady=3)
+charisma = ttk.Entry(contenedor_stats, width=5)
+charisma.grid(column=6, row=4, padx=3)
+
+ttk.Button(contenedor_stats, text="Generate").grid(column=7, row=4, padx=5, pady=5)
+
 
 
 '''ENCIMA LO QUE SE USA PARA TKINTER'''
