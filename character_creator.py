@@ -15,14 +15,26 @@ def set_nombre():
     nombre = nombre_entry.get()
     print(nombre)
 
-def set_races():
+def get_races():
+    info_razas = requests.get(BASE_URL + "races").json()["results"]
     razas = []
-    all_razas = requests.get(BASE_URL + "races").json()["results"]
-
-    for raza in all_razas:
-        razas.append(raza["name"])
-    print(razas)
+    for opcion_raza in info_razas:
+        razas.append(opcion_raza["name"])
     return razas
+
+def set_races():
+    global raza
+
+    raza = raza_combobox.get()
+    mostrar_info_raza()
+
+def mostrar_info_raza():
+    for widget in contenedor_info_raza.winfo_children():
+        widget.destroy()
+    info_raza = requests.get(BASE_URL + "races/" + raza.lower()).json()
+    ttk.Label(contenedor_info_raza, text="Velocidad: " + str(info_raza["speed"])).grid(column=0, row=0, pady=5)
+
+
 
 def set_clase(): ##funcion a la que llamar al pulsar el botón
     ##Recoger clase escogida en Tkinter y meterla en la variable clase
@@ -33,7 +45,6 @@ def set_clase(): ##funcion a la que llamar al pulsar el botón
     mostrar_competencias()
     mostrar_equipamiento()
     set_proficiencias()
-    set_races()
 
 def set_proficiencias(): ##función que recoge las  proficiencias de cada clase.
     global clase,competencias_armas
@@ -89,6 +100,7 @@ def mostrar_competencias():
         for i in range(bloque["choose"]):
             combo = ttk.Combobox(contenedor_competencias, values=opciones_limpias, state="readonly", width=50)
             combo.grid(column=0, row=fila_interna, pady=2)
+            combo.current(i)
             fila_interna += 1
 
 def get_items_from_category(url_categoria):
@@ -131,6 +143,7 @@ def mostrar_equipamiento():
         for i in range(bloque["choose"]):
             combo = ttk.Combobox(contenedor_equipamiento, values=opciones_finales, state="readonly", width=60)
             combo.grid(column=0, row=fila, pady=2)
+            combo.current(i)
             fila += 1
 
 
@@ -151,6 +164,7 @@ BASE_URL = "https://www.dnd5eapi.co/api/2014/"
 
 nombre = None
 clase = ""
+raza = ""
 info_clase = None
 competencias_armas = []
 competencias_habilidades = []
@@ -181,9 +195,9 @@ clase_verificar = ttk.Button(frm, text="Verificar Clase", command=set_clase)
 clase_verificar.grid(column=1, row=3)
 
 ttk.Label(frm, text="Select race:").grid(column=0, row=6, pady=(15, 0))
-raza_combombox = Combobox(frm, values=set_races(), state="readonly")
-raza_combombox.current(0)
-raza_combombox.grid(column=0, row=7)
+raza_combobox = Combobox(frm, values=get_races(), state="readonly")
+raza_combobox.current(0)
+raza_combobox.grid(column=0, row=7)
 
 raza_verificar = ttk.Button(frm, text="Verify race", command=set_races)
 raza_verificar.grid(column=1, row=7)
@@ -196,7 +210,9 @@ contenedor_equipamiento.grid(column=0, row=5, padx=10, pady=10)
 
 contenedor_stats = ttk.LabelFrame(frm, text="Stats", padding="10")
 contenedor_stats.grid(column=0, row=8, pady=10)
-contenedor_stats.config(cursor="target")
+
+contenedor_info_raza = ttk.LabelFrame(frm, text="Info " + raza, padding="10")
+contenedor_info_raza.grid(column=0, row=9, padx=10)
 
 intelligence = ttk.Entry(contenedor_stats, width=5, state="readonly", justify="center")
 intelligence.grid(column=0, row=1, padx=3)
