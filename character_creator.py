@@ -1,10 +1,9 @@
 import random as r
-from textwrap import wrap
-
 from tkinter import *
 from tkinter import ttk
-from tkinter.font import Font
 from tkinter.ttk import Combobox
+from playsound3 import playsound
+from PIL import Image, ImageTk
 
 import requests
 
@@ -78,16 +77,17 @@ def mostrar_info_raza():
     tipos_stats = [intelligence, strength, dexterity, wisdom, constitution, charisma]
 
     ttk.Label(contenedor_info_raza, text="Speed: " + str(info_raza["speed"])).grid(column=0, row=0, pady=5, sticky="w")
+    ttk.Label(contenedor_info_raza, text="Size: " + info_raza["size_description"], wraplength=400).grid(column=0, row=1, pady=5, sticky="w")
     languages = [language["name"] for language in info_raza["languages"]]
     languages_str = ", ".join(languages)
-    ttk.Label(contenedor_info_raza, text="Languages: " + languages_str).grid(column=0, row=1, pady=5, sticky="w")
+    ttk.Label(contenedor_info_raza, text="Languages: " + languages_str).grid(column=0, row=2, pady=5, sticky="w")
     alignment = info_raza["alignment"]
-    ttk.Label(contenedor_info_raza, wraplength=400, text="Alignment: " + alignment).grid(column=0, row=2, pady=5, sticky="w")
+    ttk.Label(contenedor_info_raza, wraplength=400, text="Alignment: " + alignment).grid(column=0, row=3, pady=5, sticky="w")
 
     info_caracteristicas = info_raza["traits"]
     for i in range (len(info_caracteristicas)):
         info_caracteristica = requests.get(BASE_URL + "traits/" + info_caracteristicas[i]["index"]).json()
-        ttk.Label(contenedor_info_raza, wraplength=600, text=f"{info_caracteristica['name']}: {info_caracteristica['desc']}").grid(column=0, row=3+i, pady=5, sticky="w")
+        ttk.Label(contenedor_info_raza, wraplength=500, text=f"{info_caracteristica['name']}: {info_caracteristica['desc']}").grid(column=0, row=4+i, pady=5, sticky="w")
 
     generate_stats()
 
@@ -204,18 +204,31 @@ root = Tk()
 root.title("DnD")
 root.geometry("850x850")
 
+style = ttk.Style()
+style.theme_use("clam")  # mejor para personalizar
+
+
+musica = playsound("./musica.mp3", block=False)
+
+
 main_container = Frame(root)
 main_container.pack(fill='both', expand=True)
 
-canvas = Canvas(main_container)
+canvas = Canvas(main_container, highlightthickness=0, background="white")
 scrollbar = ttk.Scrollbar(main_container, orient='vertical', command=canvas.yview)
 canvas.configure(yscrollcommand=scrollbar.set)
 
 scrollbar.pack(side='right', fill='y')
 canvas.pack(side='left', fill='both', expand=True)
+
 frm = ttk.Frame(canvas, padding=30)
+'''fondo_pil = Image.open("./fondo.jpg")
+fondo_tk = ImageTk.PhotoImage(fondo_pil)
+fondo_id = canvas.create_image(0, 0, image=fondo_tk, anchor="nw")
+canvas.imagen_fondo = fondo_tk '''
 
 canvas_frame = canvas.create_window((0, 0), window=frm, anchor="nw")
+
 canvas.bind('<Configure>', lambda e: canvas.itemconfig(canvas_frame, width=e.width)) ##Hace que el canvas ocpe la pantalla entera entonces se centaran las cosas
 frm.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all"))) ##Hace que el frame ocupe el canvas entero jaja
 frm.columnconfigure(0, weight=1)
