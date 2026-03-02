@@ -12,7 +12,7 @@ import requests
 
 root = Tk()
 frm = ttk.Frame(root, padding=30)
-frm.grid()
+frm.place(relx=0.5, rely=0.2, anchor="center")
 contenedor_competencias = ttk.Frame(frm)
 contenedor_competencias.grid(column=0, row=4, columnspan=2, pady=10)
 
@@ -20,6 +20,15 @@ BASE_URL = "https://www.dnd5eapi.co/api/2014/"
 
 root.title("DnD")
 root.geometry("800x500")
+root.update()
+
+ancho = 800
+alto = 500
+
+x = (root.winfo_screenwidth() // 2) - (ancho // 2)
+y = (root.winfo_screenheight() // 2) - (alto // 2)
+
+root.geometry(f"{ancho}x{alto}+{x}+{y}")
 
 nombre = None
 clase = None
@@ -144,5 +153,10 @@ def recoger_info_clase(info):
     tiradas_de_salvacion = info["saving_throws"] ##Array de json. Cada elemento tiene index, name, url
     equipamiento_de_comienzo = info["starting_equipment"] ## {"equipment": {index, name, url}}
 
+root.update()
 
+x = (root.winfo_screenwidth() // 2) - (800 // 2)
+y = (root.winfo_screenheight() // 2) - (500 // 2)
+
+root.geometry(f"800x500+{x}+{y}")
 root.mainloop()
