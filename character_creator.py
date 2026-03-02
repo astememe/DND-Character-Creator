@@ -9,36 +9,7 @@ from tkinter.ttk import Combobox
 
 import requests
 
-'''!!! No vamos a meter ni multiclases ni subclases !!!'''
-
-root = Tk()
-frm = ttk.Frame(root, padding=30)
-frm.grid()
-contenedor_competencias = ttk.Frame(frm)
-contenedor_competencias.grid(column=0, row=4, columnspan=2, pady=10)
-contenedor_stats = ttk.Frame(frm)
-contenedor_stats.grid(column=0, row=5, pady=10)
-
-BASE_URL = "https://www.dnd5eapi.co/api/2014/"
-
-root.title("DnD")
-root.geometry("800x500")
-
-nombre = None
-clase = None
-info_clase = None
-competencias_armas = []
-competencias_habilidades = []
-competencias_herramientas = []
-
-# Hay que cambiar cosas para que se manejen
-# los inputs en Tkinter
-
-opciones_clases =[] ##Usarlo en el campo de opciones de clase para que aparezcan en un menú desplegable y poner un botón de confirmar al lado.
-ttk.Label(frm, text="Introduce nombre:").grid(column=0, row=0)
-nombre_entry = ttk.Entry(frm, width=30)
-nombre_entry.insert(0, "Nombre")
-nombre_entry.grid(column=0, row=1)
+"""Funciones"""
 
 def set_nombre():
     ##Lo mismo pero con el nombre
@@ -47,11 +18,25 @@ def set_nombre():
     nombre = nombre_entry.get()
     print(nombre)
 
-opciones_clases =[] ##Usarlo en el campo de opciones de clase y poner un botón de confirmar al lado.
-opciones = requests.get(BASE_URL + "classes/").json()["results"]
-print("Clases disponibles:\n")
-for opcion in opciones:
-    opciones_clases.append(opcion["name"])
+def set_races():
+    global all_razas
+
+    razas = []
+    all_razas = requests.get(BASE_URL + "races").json()["results"]
+
+    for raza in all_razas:
+        razas.append(raza["name"])
+    print(razas)
+
+def set_clase(): ##funcion a la que llamar al pulsar el botón
+    ##Recoger clase escogida en Tkinter y meterla en la variable clase
+    global clase, info_clase
+    clase = clase_combobox.get()
+
+    info_clase = requests.get(BASE_URL + "classes/" + clase.lower()).json()
+    mostrar_competencias()
+    set_proficiencias()
+    set_races()
 
 def set_proficiencias(): ##función que recoge las  proficiencias de cada clase.
     global clase,competencias_armas
@@ -64,22 +49,25 @@ def set_proficiencias(): ##función que recoge las  proficiencias de cada clase.
     competencias.pop()
     print(competencias)
 
-ttk.Label(frm, text="Elige clase:").grid(column=0, row=2, pady=(15, 0))
-clase_combobox=Combobox(frm, values=opciones_clases, state="readonly")
-clase_combobox.current(0)
-clase_combobox.grid(column=0, row=3)
+def generate_stats():
+    stats_tipos = [intelligence, strength, dexterity, wisdom, constitution, charisma]
+    minimo_requerido = False
+    while not minimo_requerido:
+        sum_stats = 0
+        stats = []
+        for i in range(6):
+            stat = r.randint(3, 18)
+            stats.append(stat)
+            sum_stats += stat
+        if sum_stats >= 72:
+            minimo_requerido = True
 
-def set_clase(): ##funcion a la que llamar al pulsar el botón
-    ##Recoger clase escogida en Tkinter y meterla en la variable clase
-    global clase, info_clase
-    clase = clase_combobox.get()
-
-    info_clase = requests.get(BASE_URL + "classes/" + clase.lower()).json()
-    mostrar_competencias()
-    set_proficiencias()
-
-clase_verificar = ttk.Button(frm, text="Verificar Clase", command=set_clase)
-clase_verificar.grid(column=1, row=3)
+    for i in range(len(stats_tipos)):
+        stats_tipos[i].config(state="normal")
+        stats_tipos[i].delete(0, END)
+        stats_tipos[i].insert(0, str(stats[i]))
+        stats_tipos[i].config(state="readonly")
+    print(f"Suma total conseguida: {sum_stats}")
 
 def mostrar_competencias():
     for widget in contenedor_competencias.winfo_children():
@@ -106,25 +94,52 @@ def mostrar_competencias():
             combo.grid(column=0, row=fila_interna, pady=2)
             fila_interna += 1
 
-def generate_stats():
-    stats_tipos = [intelligence, strength, dexterity, wisdom, constitution, charisma]
-    minimo_requerido = False
-    while not minimo_requerido:
-        sum_stats = 0
-        stats = []
-        for i in range(6):
-            stat = r.randint(3, 18)
-            stats.append(stat)
-            sum_stats += stat
-        if sum_stats >= 72:
-            minimo_requerido = True
+'''!!! No vamos a meter ni multiclases ni subclases !!!'''
 
-    for i in range(len(stats_tipos)):
-        stats_tipos[i].config(state="normal")
-        stats_tipos[i].delete(0, END)
-        stats_tipos[i].insert(0, str(stats[i]))
-        stats_tipos[i].config(state="readonly")
-    print(f"Suma total conseguida: {sum_stats}")
+root = Tk()
+frm = ttk.Frame(root, padding=30)
+frm.grid()
+contenedor_competencias = ttk.Frame(frm)
+contenedor_competencias.grid(column=0, row=4, columnspan=2, pady=10)
+contenedor_stats = ttk.Frame(frm)
+contenedor_stats.grid(column=0, row=6, pady=10)
+
+BASE_URL = "https://www.dnd5eapi.co/api/2014/"
+
+root.title("DnD")
+root.geometry("800x500")
+
+nombre = None
+clase = None
+info_clase = None
+competencias_armas = []
+competencias_habilidades = []
+competencias_herramientas = []
+
+# Hay que cambiar cosas para que se manejen
+# los inputs en Tkinter
+
+opciones_clases =[] ##Usarlo en el campo de opciones de clase para que aparezcan en un menú desplegable y poner un botón de confirmar al lado.
+ttk.Label(frm, text="Introduce nombre:").grid(column=0, row=0)
+nombre_entry = ttk.Entry(frm, width=30)
+nombre_entry.insert(0, "Nombre")
+nombre_entry.grid(column=0, row=1)
+
+
+opciones_clases =[] ##Usarlo en el campo de opciones de clase y poner un botón de confirmar al lado.
+opciones = requests.get(BASE_URL + "classes/").json()["results"]
+print("Clases disponibles:\n")
+for opcion in opciones:
+    opciones_clases.append(opcion["name"])
+
+ttk.Label(frm, text="Elige clase:").grid(column=0, row=2, pady=(15, 0))
+
+clase_combobox=Combobox(frm, values=opciones_clases, state="readonly")
+clase_combobox.current(0)
+clase_combobox.grid(column=0, row=3)
+
+clase_verificar = ttk.Button(frm, text="Verificar Clase", command=set_clase)
+clase_verificar.grid(column=1, row=3)
 
 contenedor_stats.config(cursor="target")
 
@@ -153,6 +168,7 @@ charisma = ttk.Entry(contenedor_stats, width=5)
 charisma.grid(column=6, row=4, padx=3)
 
 ttk.Button(contenedor_stats, text="Generate", command=generate_stats).grid(column=7, row=4, padx=5, pady=5)
+
 
 
 '''ENCIMA LO QUE SE USA PARA TKINTER'''
