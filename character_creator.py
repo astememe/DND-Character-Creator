@@ -4,6 +4,7 @@ from tkinter import *
 from tkinter import ttk
 from tkinter.ttk import Combobox
 
+from django.template.defaultfilters import join
 from playsound3 import playsound
 from PIL import Image, ImageTk
 import pygame
@@ -96,6 +97,8 @@ def mostrar_info_raza():
         info_caracteristica = requests.get(BASE_URL + "traits/" + info_caracteristicas[i]["index"]).json()
         ttk.Label(contenedor_info_raza, wraplength=500, text=f"{info_caracteristica['name']}: {info_caracteristica['desc']}").grid(column=0, row=4+i, pady=5, sticky="w")
     generate_stats()
+    guardar = ttk.Button(frm, text="Guardar personaje", command=guardar_datos)
+    guardar.grid(column=0, row=11, columnspan=2, padx=5, sticky="w")
 
 def generate_stats():
     global nombre_stats, prioridad_stats, clase, tipos_stats, stats
@@ -239,8 +242,10 @@ def guardar_datos():
         for equpamiento in equipamiento_de_inicio_default:
             equipamiento_de_inicio.append(equpamiento)
         csvfile.write(f"{' || '.join(equipamiento_de_inicio)}, ")
-        csvfile.write(f"{info_tamano}, {info_speed}, {' || '.join(info_lenguajes)}, {' || '.join(info_traits)}, {backstory.get("1.0", "end")}\n")
+        csvfile.write(f"{info_tamano}, {info_speed}, {' || '.join(info_lenguajes)}, {' || '.join(info_traits)}, {backstory.get("1.0", "end")}")
         csvfile.close()
+
+    root.destroy()
 
 
 root = Tk()
@@ -370,8 +375,6 @@ contenedor_story.grid(column=0, row=10, columnspan=2, pady=(10, 0), sticky="nsew
 backstory = ScrolledText(contenedor_story, width=60, height=10)
 backstory.pack(padx=10, pady=10)
 
-guardar = ttk.Button(frm, text="Guardar personaje", command=guardar_datos)
-guardar.grid(column=0, row=11, columnspan=2, padx=5, sticky="w")
 # EXCEL
 root_characters = "character.csv"
 
