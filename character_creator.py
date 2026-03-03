@@ -171,32 +171,33 @@ def mostrar_equipamiento():
 
         opciones_finales = []
 
-        for opcion_equipamiento in bloque["from"]["options"]:
-            if opcion_equipamiento["option_type"] == "counted_reference":
-                nombre_equipamiento = f"{opcion_equipamiento['count']} {opcion_equipamiento['of']['name']}"
-                opciones_finales.append(nombre_equipamiento)
+        if "options" in bloque["from"]:
+            for opcion_equipamiento in bloque["from"]["options"]:
+                if opcion_equipamiento["option_type"] == "counted_reference":
+                    nombre_equipamiento = f"{opcion_equipamiento['count']} {opcion_equipamiento['of']['name']}"
+                    opciones_finales.append(nombre_equipamiento)
 
-            elif opcion_equipamiento["option_type"] == "choice":
-                sub_opcion = opcion_equipamiento["choice"]
+                elif opcion_equipamiento["option_type"] == "choice":
+                    sub_opcion = opcion_equipamiento["choice"]
 
-                if sub_opcion["from"]["option_set_type"] == "equipment_category":
-                    url_opcion = sub_opcion["from"]["equipment_category"]["url"]
-                    lista_items = get_items_from_category(url_opcion)
-                    for item in lista_items:
-                        opciones_finales.append(item)
+                    if sub_opcion["from"]["option_set_type"] == "equipment_category":
+                        url_opcion = sub_opcion["from"]["equipment_category"]["url"]
+                        lista_items = get_items_from_category(url_opcion)
+                        for item in lista_items:
+                            opciones_finales.append(item)
 
-                elif sub_opcion["from"]["option_set_type"] == "options_array":
-                    for sub_opcion_segunda in sub_opcion["from"]["options"]:
-                        if "item" in sub_opcion_segunda:
-                            opciones_finales.append(sub_opcion_segunda["item"]["name"])
-                        elif "of" in sub_opcion_segunda:
-                            opciones_finales.append(f"{sub_opcion_segunda['count']} {sub_opcion_segunda['of']['name']}")
+                    elif sub_opcion["from"]["option_set_type"] == "options_array":
+                        for sub_opcion_segunda in sub_opcion["from"]["options"]:
+                            if "item" in sub_opcion_segunda:
+                                opciones_finales.append(sub_opcion_segunda["item"]["name"])
+                            elif "of" in sub_opcion_segunda:
+                                opciones_finales.append(f"{sub_opcion_segunda['count']} {sub_opcion_segunda['of']['name']}")
 
-        for i in range(bloque["choose"]):
-            combo = ttk.Combobox(contenedor_equipamiento, values=opciones_finales, state="readonly", width=60)
-            combo.current(0)
-            combo.grid(column=0, row=fila, pady=2)
-            fila += 1
+            for i in range(bloque["choose"]):
+                combo = ttk.Combobox(contenedor_equipamiento, values=opciones_finales, state="readonly", width=60)
+                combo.current(0)
+                combo.grid(column=0, row=fila, pady=2)
+                fila += 1
 
 def mostrar_datos():
     set_nombre()
