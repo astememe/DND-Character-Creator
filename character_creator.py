@@ -379,5 +379,4 @@ guardar.grid(column=0, row=11, columnspan=2, padx=5, sticky="w")
 # EXCEL
 root_characters = "character.csv"
 
-
 root.mainloop()
