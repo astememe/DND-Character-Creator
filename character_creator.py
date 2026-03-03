@@ -3,6 +3,8 @@ import random as r
 from tkinter import *
 from tkinter import ttk
 from tkinter.ttk import Combobox
+
+from django.template.defaultfilters import join
 from playsound3 import playsound
 from PIL import Image, ImageTk
 import pygame
@@ -14,9 +16,7 @@ from tkinter.scrolledtext import ScrolledText
 def set_nombre():
     ##Lo mismo pero con el nombre
     global nombre
-    print(nombre_entry.get())
     nombre = nombre_entry.get()
-    print(nombre)
 
 def get_races():
     info_razas = requests.get(BASE_URL + "races").json()["results"]
@@ -29,7 +29,7 @@ def set_races():
     global raza
     raza = raza_combobox.get()
     mostrar_info_raza()
-    mostrar_stats()
+    boton_generar_stats()
 
 def set_clase():
     global clase, info_clase
@@ -82,8 +82,10 @@ def mostrar_info_raza():
     info_traits = [trait["name"] for trait in info_raza["traits"]]
     print(info_traits)
 
-    ttk.Label(contenedor_info_raza, text="Speed: " + str(info_raza["speed"])).grid(column=0, row=0, pady=5, sticky="w")
-    ttk.Label(contenedor_info_raza, text="Size: " + info_raza["size_description"], wraplength=400).grid(column=0, row=1, pady=5, sticky="w")
+    label_velocidad = ttk.Label(contenedor_info_raza, text="Speed: " + str(info_raza["speed"]))
+    label_velocidad.grid(column=0, row=0, pady=5, sticky="w")
+    label_tamano = ttk.Label(contenedor_info_raza, text="Size: " + info_raza["size_description"], wraplength=400)
+    label_tamano.grid(column=0, row=1, pady=5, sticky="w")
     languages = [language["name"] for language in info_raza["languages"]]
     languages_str = ", ".join(languages)
     ttk.Label(contenedor_info_raza, text="Languages: " + languages_str).grid(column=0, row=2, pady=5, sticky="w")
@@ -96,9 +98,8 @@ def mostrar_info_raza():
         ttk.Label(contenedor_info_raza, wraplength=500, text=f"{info_caracteristica['name']}: {info_caracteristica['desc']}").grid(column=0, row=4+i, pady=5, sticky="w")
     generate_stats()
 
-
 def generate_stats():
-    global nombre_stats, prioridad_stats, clase, tipos_stats
+    global nombre_stats, prioridad_stats, clase, tipos_stats, stats
     minimo_requerido = False
     stats = []
     sum_stats = 0
@@ -130,8 +131,6 @@ def generate_stats():
         tipos_stats[i].insert(0, str(stats[i][1]))
         tipos_stats[i].config(state="readonly")
     print(f"Suma total conseguida: {sum_stats}")
-
-
 def get_stat_bonus():
     stats_bonuses = []
     stats_bonuses_json = requests.get(BASE_URL + "races/" + raza.lower()).json()["ability_bonuses"]
@@ -139,11 +138,12 @@ def get_stat_bonus():
         stats_bonuses.append((stat["ability_score"]["name"], stat["bonus"]))
     return stats_bonuses
 
-def mostrar_stats():
+def boton_generar_stats():
     btn_generate = ttk.Button(contenedor_stats, text="Generate", command=generate_stats)
     btn_generate.grid(column=6, row=1, padx=10)
 
 def mostrar_competencias():
+    opciones_limpias = []
     for widget in contenedor_competencias.winfo_children():
         widget.destroy()
     fila_interna = 0
@@ -167,6 +167,7 @@ def mostrar_competencias():
             combo.current(0)
             combo.grid(column=0, row=fila_interna, pady=2)
             fila_interna += 1
+    competencias_habilidades = opciones_limpias
 
 def get_items_from_category(url_categoria):
     data = requests.get("https://www.dnd5eapi.co" + url_categoria).json()
@@ -213,13 +214,39 @@ def mostrar_equipamiento():
                 fila += 1
 
 def mostrar_datos():
+    #NOMBRE
     set_nombre()
     print(nombre)
+    #CLASE
     print(clase)
+    #RAZA
     print(raza)
-    print(competencias_habilidades)
+    #STATS
+    for tipo, stat in stats:
+        print(stat)
+    #COMPETENCIAS ARMAS
+    competencias_armas = []
+    for i in range(1, len(contenedor_competencias.winfo_children())):
+        try:
+            competencias_armas.append(contenedor_competencias.winfo_children()[i].get())
+        except:
+            pass
+    competencias_armas = join(competencias_armas, ", ")
     print(competencias_armas)
-    print(competencias_herramientas)
+    #EQUIPAMIENTO INICIAL
+    equipamiento_de_inicio = []
+    for i in range(len(contenedor_equipamiento.winfo_children())):
+        try:
+            equipamiento_de_inicio.append(contenedor_equipamiento.winfo_children()[i].get())
+        except:
+            pass
+    print(equipamiento_de_inicio)
+    #INFO
+    print(info_speed)
+    print(info_lenguajes)
+    print(info_traits)
+    #BACKSTORY
+    print(backstory.get("1.0", "end"))
 
 root = Tk()
 root.title("DnD")
@@ -291,6 +318,10 @@ competencias_herramientas = []
 hit_die = None
 tiradas_de_salvacion = []
 equipamiento_de_comienzo = []
+nombre_stats = ["INT", "STR", "DEX", "WIS", "CON", "CHA"]
+tipos_stats = []
+backstory = ""
+
 info_tamano = ""
 info_edad = ""
 info_speed = ""
@@ -347,6 +378,5 @@ guardar = ttk.Button(frm, text="Guardar personaje", command=mostrar_datos)
 guardar.grid(column=0, row=11, columnspan=2, padx=5, sticky="w")
 # EXCEL
 root_characters = "character.csv"
-nombre_personaje = nombre_entry.get()
 
 root.mainloop()
