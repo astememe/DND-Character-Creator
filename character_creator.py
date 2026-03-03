@@ -1,7 +1,4 @@
 import random as r
-from textwrap import wrap
-
-import openpyxl
 
 from tkinter import *
 from tkinter import ttk
@@ -10,7 +7,6 @@ from tkinter.ttk import Combobox
 from playsound3 import playsound
 from PIL import Image, ImageTk
 import pygame
-
 import requests
 
 from tkinter.scrolledtext import ScrolledText
@@ -32,7 +28,7 @@ def set_races():
     global raza
     raza = raza_combobox.get()
     mostrar_info_raza()
-    mostrar_stats()
+    boton_generar_stats()
 
 def set_clase():
     global clase, info_clase
@@ -45,7 +41,7 @@ def set_clase():
     set_races()
 
 def set_proficiencias():
-    global clase, competencias_armas
+    global clase, competencias_armas, tipos_stats
     competencias = []
     competencias_armas = requests.get(BASE_URL + "classes/" + clase.lower()).json()["proficiencies"]
     for competencia in competencias_armas:
@@ -56,23 +52,24 @@ def set_proficiencias():
     print(competencias)
 
 def mostrar_info_raza():
-    global tipos_stats, info_raza
+    global info_raza, tipos_stats
     for widget in contenedor_info_raza.winfo_children():
         widget.destroy()
     for widget in contenedor_stats.winfo_children():
         widget.destroy()
 
-    info_raza = requests.get(BASE_URL + "races/" + raza.lower()).json()
-
     tipos_stats = []
 
-    for i, nombre in enumerate(nombre_stats):
-        ttk.Label(contenedor_stats, text=nombre).grid(column=i, row=0, padx=3)
+    info_raza = requests.get(BASE_URL + "races/" + raza.lower()).json()
+
+    columna = 0
+    for nombre in nombre_stats:
+        ttk.Label(contenedor_stats, text=nombre).grid(column=columna, row=0, padx=3)
 
         entry = ttk.Entry(contenedor_stats, width=5, state="readonly", justify="center")
-        entry.grid(column=i, row=1, padx=3)
-
+        entry.grid(column=columna, row=1, padx=3)
         tipos_stats.append(entry)
+        columna += 1
 
     ttk.Label(contenedor_info_raza, text="Speed: " + str(info_raza["speed"])).grid(column=0, row=0, pady=5, sticky="w")
     ttk.Label(contenedor_info_raza, text="Size: " + info_raza["size_description"], wraplength=400).grid(column=0, row=1, pady=5, sticky="w")
@@ -90,39 +87,31 @@ def mostrar_info_raza():
     generate_stats()
 
 def generate_stats():
-    global tipos_stats, clase
-    minimo_requerido = True
-    while minimo_requerido:
-        stats = [r.randint(3, 18) for _ in range(6)]
-        if sum(stats) >= 72:
-            minimo_requerido = False
-
-    stats.sort(reverse=True)
-
-    orden_stats = ["intelligence", "strength", "dexterity", "wisdom", "constitution", "charisma"]
-
-    prioridad = prioridad_stats.get(clase, orden_stats)
-
-    asignacion = {}
-    for i in range(6):
-        asignacion[prioridad[i]] = stats[i]
-    global tipos_stats
+    global nombre_stats, prioridad_stats, clase, tipos_stats, stats
     minimo_requerido = False
     stats = []
+    sum_stats = 0
     while not minimo_requerido:
+        stats = []
         sum_stats = 0
         for i in range(6):
             stat = r.randint(3, 18)
-            stats.append([tipos_stats_nombres[i], stat])
+            stats.append([nombre_stats[i], stat])
             sum_stats += stat
         if sum_stats >= 72:
             minimo_requerido = True
 
     stat_bonuses = get_stat_bonus()
     for stat in stat_bonuses:
-        posicion_stat = tipos_stats_nombres.index(stat[0])
+        posicion_stat = nombre_stats.index(stat[0])
         stats[posicion_stat][1] += stat[1]
 
+    max_stat = 0
+    for stat in stats:
+        if stat[1] > max_stat:
+            max_stat = stat[1]
+    if stats[nombre_stats.index(prioridad_stats[clase])][1] < max_stat:
+        stats[nombre_stats.index(prioridad_stats[clase])][1] = max_stat + 1
 
     for i in range(len(tipos_stats)):
         tipos_stats[i].config(state="normal")
@@ -130,14 +119,6 @@ def generate_stats():
         tipos_stats[i].insert(0, str(stats[i][1]))
         tipos_stats[i].config(state="readonly")
     print(f"Suma total conseguida: {sum_stats}")
-    for i, widget in enumerate(tipos_stats):
-        stat = orden_stats[i]
-        valor = asignacion[stat]
-
-        widget.config(state="normal")
-        widget.delete(0, END)
-        widget.insert(0, str(valor))
-        widget.config(state="readonly")
 
 def get_stat_bonus():
     stats_bonuses = []
@@ -146,7 +127,7 @@ def get_stat_bonus():
         stats_bonuses.append((stat["ability_score"]["name"], stat["bonus"]))
     return stats_bonuses
 
-def mostrar_stats():
+def boton_generar_stats():
     btn_generate = ttk.Button(contenedor_stats, text="Generate", command=generate_stats)
     btn_generate.grid(column=6, row=1, padx=10)
 
@@ -191,26 +172,27 @@ def mostrar_equipamiento():
 
         opciones_finales = []
 
-        for opcion_equipamiento in bloque["from"]["options"]:
-            if opcion_equipamiento["option_type"] == "counted_reference":
-                nombre_equipamiento = f"{opcion_equipamiento['count']} {opcion_equipamiento['of']['name']}"
-                opciones_finales.append(nombre_equipamiento)
+        if "options" in bloque:
+            for opcion_equipamiento in bloque["from"]["options"]:
+                if opcion_equipamiento["option_type"] == "counted_reference":
+                    nombre_equipamiento = f"{opcion_equipamiento['count']} {opcion_equipamiento['of']['name']}"
+                    opciones_finales.append(nombre_equipamiento)
 
-            elif opcion_equipamiento["option_type"] == "choice":
-                sub_opcion = opcion_equipamiento["choice"]
+                elif opcion_equipamiento["option_type"] == "choice":
+                    sub_opcion = opcion_equipamiento["choice"]
 
-                if sub_opcion["from"]["option_set_type"] == "equipment_category":
-                    url_opcion = sub_opcion["from"]["equipment_category"]["url"]
-                    lista_items = get_items_from_category(url_opcion)
-                    for item in lista_items:
-                        opciones_finales.append(item)
+                    if sub_opcion["from"]["option_set_type"] == "equipment_category":
+                        url_opcion = sub_opcion["from"]["equipment_category"]["url"]
+                        lista_items = get_items_from_category(url_opcion)
+                        for item in lista_items:
+                            opciones_finales.append(item)
 
-                elif sub_opcion["from"]["option_set_type"] == "options_array":
-                    for sub_opcion_segunda in sub_opcion["from"]["options"]:
-                        if "item" in sub_opcion_segunda:
-                            opciones_finales.append(sub_opcion_segunda["item"]["name"])
-                        elif "of" in sub_opcion_segunda:
-                            opciones_finales.append(f"{sub_opcion_segunda['count']} {sub_opcion_segunda['of']['name']}")
+                    elif sub_opcion["from"]["option_set_type"] == "options_array":
+                        for sub_opcion_segunda in sub_opcion["from"]["options"]:
+                            if "item" in sub_opcion_segunda:
+                                opciones_finales.append(sub_opcion_segunda["item"]["name"])
+                            elif "of" in sub_opcion_segunda:
+                                opciones_finales.append(f"{sub_opcion_segunda['count']} {sub_opcion_segunda['of']['name']}")
 
         for i in range(bloque["choose"]):
             combo = ttk.Combobox(contenedor_equipamiento, values=opciones_finales, state="readonly", width=60)
@@ -223,8 +205,14 @@ def mostrar_datos():
     print(nombre)
     print(clase)
     print(raza)
-    print(tipos_stats.ge)
-    print(mostrar_equipamiento())
+    print(stats)
+    # print(stats[0])
+    # print(stats[1])
+    # print(stats[2])
+    # print(stats[3])
+    # print(stats[4])
+    # print(stats[5])
+    # print(mostrar_equipamiento())
     print(competencias_herramientas)
     print(competencias_habilidades)
     print(backstory.get("1.0", "end"))
@@ -272,19 +260,21 @@ canvas.bind_all("<MouseWheel>", mover_rueda)
 BASE_URL = "https://www.dnd5eapi.co/api/2014/"
 
 prioridad_stats = {
-    "Barbarian": ["strength", "constitution", "dexterity", "wisdom", "charisma", "intelligence"],
-    "Fighter": ["strength", "constitution", "dexterity", "wisdom", "charisma", "intelligence"],
-    "Paladin": ["strength", "charisma", "constitution", "wisdom", "dexterity", "intelligence"],
-    "Rogue": ["dexterity", "intelligence", "charisma", "wisdom", "constitution", "strength"],
-    "Wizard": ["intelligence", "constitution", "dexterity", "wisdom", "charisma", "strength"],
-    "Cleric": ["wisdom", "constitution", "strength", "charisma", "dexterity", "intelligence"],
-    "Ranger": ["dexterity", "wisdom", "constitution", "strength", "intelligence", "charisma"],
-    "Sorcerer": ["charisma", "constitution", "dexterity", "wisdom", "intelligence", "strength"],
-    "Warlock": ["charisma", "constitution", "dexterity", "wisdom", "intelligence", "strength"],
-    "Monk": ["dexterity", "wisdom", "constitution", "strength", "charisma", "intelligence"],
-    "Druid": ["wisdom", "constitution", "dexterity", "intelligence", "charisma", "strength"],
-    "Bard": ["charisma", "dexterity", "constitution", "wisdom", "intelligence", "strength"]
+    "Barbarian":    "STR",
+    "Fighter":      "STR",
+    "Paladin":      "STR",
+    "Rogue":        "DEX",
+    "Wizard":       "INT",
+    "Cleric":       "WIS",
+    "Ranger":       "DEX",
+    "Sorcerer":     "CHA",
+    "Warlock":      "CHA",
+    "Monk":         "DEX",
+    "Druid":        "WIS",
+    "Bard":         "CHA"
 }
+nombre_stats = ["INT", "STR", "DEX", "WIS", "CON", "CHA"]
+
 nombre = ""
 clase = ""
 raza = ""
@@ -343,7 +333,6 @@ contenedor_story.grid(column=0, row=10, columnspan=2, pady=(10, 0), sticky="nsew
 
 backstory = ScrolledText(contenedor_story, width=60, height=10)
 backstory.pack(padx=10, pady=10)
-tipos_stats_nombres = ["INT", "STR", "DEX", "WIS", "CON", "CHA"]
 
 guardar = ttk.Button(frm, text="Guardar personaje", command=mostrar_datos)
 guardar.grid(column=0, row=11, columnspan=2, padx=5, sticky="w")
