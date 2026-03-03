@@ -172,7 +172,7 @@ def mostrar_equipamiento():
 
         opciones_finales = []
 
-        if "options" in bloque:
+        if "options" in bloque["from"]:
             for opcion_equipamiento in bloque["from"]["options"]:
                 if opcion_equipamiento["option_type"] == "counted_reference":
                     nombre_equipamiento = f"{opcion_equipamiento['count']} {opcion_equipamiento['of']['name']}"
@@ -194,11 +194,11 @@ def mostrar_equipamiento():
                             elif "of" in sub_opcion_segunda:
                                 opciones_finales.append(f"{sub_opcion_segunda['count']} {sub_opcion_segunda['of']['name']}")
 
-        for i in range(bloque["choose"]):
-            combo = ttk.Combobox(contenedor_equipamiento, values=opciones_finales, state="readonly", width=60)
-            combo.current(0)
-            combo.grid(column=0, row=fila, pady=2)
-            fila += 1
+            for i in range(bloque["choose"]):
+                combo = ttk.Combobox(contenedor_equipamiento, values=opciones_finales, state="readonly", width=60)
+                combo.current(0)
+                combo.grid(column=0, row=fila, pady=2)
+                fila += 1
 
 def mostrar_datos():
     set_nombre()
@@ -274,6 +274,7 @@ prioridad_stats = {
     "Bard":         "CHA"
 }
 nombre_stats = ["INT", "STR", "DEX", "WIS", "CON", "CHA"]
+tipos_stats = []
 
 nombre = ""
 clase = ""
