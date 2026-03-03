@@ -4,6 +4,7 @@ from tkinter import *
 from tkinter import ttk
 from tkinter.ttk import Combobox
 
+from django.template.defaultfilters import join
 from playsound3 import playsound
 from PIL import Image, ImageTk
 import pygame
@@ -132,6 +133,7 @@ def boton_generar_stats():
     btn_generate.grid(column=6, row=1, padx=10)
 
 def mostrar_competencias():
+    opciones_limpias = []
     for widget in contenedor_competencias.winfo_children():
         widget.destroy()
     fila_interna = 0
@@ -155,6 +157,7 @@ def mostrar_competencias():
             combo.current(0)
             combo.grid(column=0, row=fila_interna, pady=2)
             fila_interna += 1
+    competencias_habilidades = opciones_limpias
 
 def get_items_from_category(url_categoria):
     data = requests.get("https://www.dnd5eapi.co" + url_categoria).json()
@@ -205,16 +208,22 @@ def mostrar_datos():
     print(nombre)
     print(clase)
     print(raza)
-    print(stats)
-    # print(stats[0])
-    # print(stats[1])
-    # print(stats[2])
-    # print(stats[3])
-    # print(stats[4])
-    # print(stats[5])
-    # print(mostrar_equipamiento())
-    print(competencias_herramientas)
-    print(competencias_habilidades)
+    #STATS
+    for tipo, stat in stats:
+        print(stat)
+    #COMPETENCIAS ARMAS
+    competencias_armas = []
+    for i in range(1, len(contenedor_competencias.winfo_children())):
+        competencias_armas.append(contenedor_competencias.winfo_children()[i].get())
+    competencias_armas = join(competencias_armas, ", ")
+    print(competencias_armas)
+    #EQUIPAMIENTO INICIAL
+    equipamiento_de_inicio = []
+    for i in range(0, len(contenedor_equipamiento.winfo_children())):
+        if i % 2 != 0:
+            equipamiento_de_inicio.append(contenedor_equipamiento.winfo_children()[i].get())
+    print(equipamiento_de_inicio)
+
     print(backstory.get("1.0", "end"))
 
 root = Tk()
