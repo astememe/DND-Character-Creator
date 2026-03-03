@@ -53,7 +53,7 @@ def set_proficiencias():
     print(competencias)
 
 def mostrar_info_raza():
-    global info_raza, tipos_stats
+    global info_tamano, info_edad, info_speed, info_alignment, info_size_description, info_lenguajes, info_lenguaje_desc, info_traits, tipos_stats, info_raza
     for widget in contenedor_info_raza.winfo_children():
         widget.destroy()
     for widget in contenedor_stats.winfo_children():
@@ -95,6 +95,8 @@ def mostrar_info_raza():
         info_caracteristica = requests.get(BASE_URL + "traits/" + info_caracteristicas[i]["index"]).json()
         ttk.Label(contenedor_info_raza, wraplength=500, text=f"{info_caracteristica['name']}: {info_caracteristica['desc']}").grid(column=0, row=4+i, pady=5, sticky="w")
     generate_stats()
+
+
 def generate_stats():
     global nombre_stats, prioridad_stats, clase, tipos_stats
     minimo_requerido = False
