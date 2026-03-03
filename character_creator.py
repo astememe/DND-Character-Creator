@@ -50,7 +50,7 @@ def set_proficiencias():
     if len(competencias) >= 2:
         competencias.pop()
         competencias.pop()
-    print(competencias)
+    competencias_armas = competencias
 
 def mostrar_info_raza():
     global info_tamano, info_edad, info_speed, info_alignment, info_size_description, info_lenguajes, info_lenguaje_desc, info_traits, tipos_stats, info_raza
@@ -72,7 +72,7 @@ def mostrar_info_raza():
         tipos_stats.append(entry)
         columna += 1
 
-    info_tamano = info_raza["size_description"][0]
+    info_tamano = info_raza["size_description"]
     info_edad = info_raza["age"]
     info_speed = info_raza["speed"]
     info_alignment = info_raza["alignment"]
@@ -97,9 +97,8 @@ def mostrar_info_raza():
         info_caracteristica = requests.get(BASE_URL + "traits/" + info_caracteristicas[i]["index"]).json()
         ttk.Label(contenedor_info_raza, wraplength=500, text=f"{info_caracteristica['name']}: {info_caracteristica['desc']}").grid(column=0, row=4+i, pady=5, sticky="w")
     generate_stats()
-    guardar = ttk.Button(frm, text="Guardar personaje", command=mostrar_datos)
+    guardar = ttk.Button(frm, text="Guardar personaje", command=guardar_datos)
     guardar.grid(column=0, row=11, columnspan=2, padx=5, sticky="w")
-    root.destroy()
 
 def generate_stats():
     global nombre_stats, prioridad_stats, clase, tipos_stats, stats
@@ -146,7 +145,6 @@ def boton_generar_stats():
     btn_generate.grid(column=6, row=1, padx=10)
 
 def mostrar_competencias():
-    opciones_limpias = []
     for widget in contenedor_competencias.winfo_children():
         widget.destroy()
     fila_interna = 0
@@ -170,7 +168,6 @@ def mostrar_competencias():
             combo.current(0)
             combo.grid(column=0, row=fila_interna, pady=2)
             fila_interna += 1
-    competencias_habilidades = opciones_limpias
 
 def get_items_from_category(url_categoria):
     data = requests.get("https://www.dnd5eapi.co" + url_categoria).json()
@@ -221,51 +218,34 @@ def mostrar_equipamiento():
                 combo.grid(column=0, row=fila, pady=2)
                 fila += 1
 
-def mostrar_datos():
-    global competencias_armas, stat
+def guardar_datos():
+    global competencias_armas
     #NOMBRE
     set_nombre()
-    print(f"Nombre: {nombre}")
-    #CLASE
-    print(f"Clase: {clase}")
-    #RAZA
-    print(f"Raza: {raza}")
-    #STATS
-    for tipo, stat in stats:
-        print(f"{tipo}: {stat}")
-    #COMPETENCIAS ARMAS
-    competencias_armas = []
-    for i in range(1, len(contenedor_competencias.winfo_children())):
-        try:
-            competencias_armas.append(contenedor_competencias.winfo_children()[i].get())
-        except:
-            pass
-    competencias_armas = ", ".join(competencias_armas)
-    print(f"competencias en armas: {competencias_armas}")
-    #EQUIPAMIENTO INICIAL
     equipamiento_de_inicio = []
-    for i in range(len(contenedor_equipamiento.winfo_children())):
-        try:
-            equipamiento_de_inicio.append(contenedor_equipamiento.winfo_children()[i].get())
-        except:
-            pass
-    for equpamiento in equipamiento_de_inicio_default:
-        equipamiento_de_inicio.append(equpamiento)
-    print(f"equipamiento de inicio: {equipamiento_de_inicio}")
-    #INFO
-    print(f"tamano: {info_size_description}")
-    print(f"velocidad: {info_speed}")
-    print(f"lenguajes:{info_lenguajes}")
-    print(f"Informacion demás:{info_traits}")
-    #BACKSTORY
-    backstory_text = backstory.get("1.0", "end")
-    print(f"Backstory:{backstory.get("1.0", "end")}")
-    datos = (nombre,clase,raza,stat,stat,stat,stat,stat,stat,competencias_armas,equipamiento_de_inicio,info_speed,info_size_description,info_lenguajes,info_traits,backstory_text)
-    with open("character.csv", "a") as f:
-        for dato in datos:
-            print(f"{dato}")
-            f.write(dato)
-        f.close()
+
+    with open("character.csv", "a", encoding="utf-8") as csvfile:
+        csvfile.write(f"{nombre}, {clase}, {raza}, ")
+        for tipo, stat in stats:
+            csvfile.write(f"{stat}, ")
+        for i in range(len(contenedor_competencias.winfo_children())):
+            try:
+                competencias_armas.append(contenedor_competencias.winfo_children()[i].get())
+            except:
+                pass
+        csvfile.write(f"{' || '.join(competencias_armas)}, ")
+        for i in range(len(contenedor_equipamiento.winfo_children())):
+            try:
+                equipamiento_de_inicio.append(contenedor_equipamiento.winfo_children()[i].get())
+            except:
+                pass
+        for equpamiento in equipamiento_de_inicio_default:
+            equipamiento_de_inicio.append(equpamiento)
+        csvfile.write(f"{' || '.join(equipamiento_de_inicio)}, ")
+        csvfile.write(f"{info_tamano}, {info_speed}, {' || '.join(info_lenguajes)}, {' || '.join(info_traits)}, {backstory.get("1.0", "end")}")
+        csvfile.close()
+
+    root.destroy()
 
 
 root = Tk()
