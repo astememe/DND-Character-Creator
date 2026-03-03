@@ -4,7 +4,6 @@ from tkinter import *
 from tkinter import ttk
 from tkinter.ttk import Combobox
 
-from django.template.defaultfilters import join
 from playsound3 import playsound
 from PIL import Image, ImageTk
 import pygame
@@ -220,20 +219,19 @@ def mostrar_equipamiento():
 
 def guardar_datos():
     global competencias_armas
-    #NOMBRE
     set_nombre()
     equipamiento_de_inicio = []
 
     with open("character.csv", "a", encoding="utf-8") as csvfile:
-        csvfile.write(f"{nombre}, {clase}, {raza}, ")
+        csvfile.write(f"{nombre};{clase};{raza};")
         for tipo, stat in stats:
-            csvfile.write(f"{stat}, ")
+            csvfile.write(f"{stat};")
         for i in range(len(contenedor_competencias.winfo_children())):
             try:
                 competencias_armas.append(contenedor_competencias.winfo_children()[i].get())
             except:
                 pass
-        csvfile.write(f"{' || '.join(competencias_armas)}, ")
+        csvfile.write(f"{' || '.join(competencias_armas)};")
         for i in range(len(contenedor_equipamiento.winfo_children())):
             try:
                 equipamiento_de_inicio.append(contenedor_equipamiento.winfo_children()[i].get())
@@ -241,9 +239,10 @@ def guardar_datos():
                 pass
         for equpamiento in equipamiento_de_inicio_default:
             equipamiento_de_inicio.append(equpamiento)
-        csvfile.write(f"{' || '.join(equipamiento_de_inicio)}, ")
-        csvfile.write(f"{info_tamano}, {info_speed}, {' || '.join(info_lenguajes)}, {' || '.join(info_traits)}, {backstory.get("1.0", "end")}")
-        csvfile.close()
+        csvfile.write(f"{' || '.join(equipamiento_de_inicio)};")
+        backstory_a_escribir = backstory.get('1.0', 'end')
+        backstory_a_escribir = backstory_a_escribir.replace("\n", " ")
+        csvfile.write(f"{info_tamano};{info_speed};{' || '.join(info_lenguajes)};{' || '.join(info_traits)};{backstory_a_escribir}")
 
     root.destroy()
 
