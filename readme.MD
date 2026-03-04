@@ -24,5 +24,5 @@ Dungeon Masters que necesiten generar fichas rápidamente.
 <hr>
 
 Al finalizar el proceso, la aplicación muestra la información en pantalla,
-y genera un archivo en Excel. Este archivo sirve como base de datos personal 
+y genera un archivo csv. Este archivo sirve como base de datos personal 
 donde el usuario puede almacenar todos sus personajes.
